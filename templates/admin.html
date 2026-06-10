@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3 fw-bold text-white mb-1">Admin Control Center</h1>
+        <p class="text-secondary">Manage registered students, attendance logs, and model training.</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="glass-card p-4 stat-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-secondary text-uppercase tracking-wider fs-8 mb-2">Registered Students</h6>
+                    <span class="fs-2 fw-bold text-white">{{ students|length }}</span>
+                </div>
+                <div class="rounded-3 bg-primary bg-opacity-10 p-3 border border-primary border-opacity-10">
+                    <i class="fas fa-users text-primary fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a href="/admin/register" class="small text-primary text-decoration-none"><i class="fas fa-plus-circle me-1"></i> Add new student</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="glass-card p-4 stat-card success h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-secondary text-uppercase tracking-wider fs-8 mb-2">Today's Attendance</h6>
+                    <span class="fs-2 fw-bold text-white">{{ attendance_count }}</span>
+                </div>
+                <div class="rounded-3 bg-success bg-opacity-10 p-3 border border-success border-opacity-10">
+                    <i class="fas fa-check-double text-success fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a href="/admin/attendance" class="small text-success text-decoration-none"><i class="fas fa-eye me-1"></i> View all logs</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="glass-card p-4 stat-card warning h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-secondary text-uppercase tracking-wider fs-8 mb-2">Model State</h6>
+                    <span id="model-status-text" class="fs-3 fw-bold text-white">
+                        {% if model_exists %}Ready{% else %}Not Trained{% endif %}
+                    </span>
+                </div>
+                <div class="rounded-3 bg-warning bg-opacity-10 p-3 border border-warning border-opacity-10">
+                    <i class="fas fa-brain text-warning fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button id="train-model-btn" class="btn btn-link p-0 small text-warning text-decoration-none border-0" {% if students|length == 0 %}disabled{% endif %}>
+                    <i class="fas fa-cogs me-1"></i> <span id="train-btn-label">Train Model</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-5">
+    <div class="col-lg-8 mb-4 mb-lg-0">
+        <div class="glass-card p-4 h-100">
+            <h3 class="h5 fw-bold text-white mb-4"><i class="fas fa-chart-line text-primary me-2"></i> Attendance Trend (Last 7 Active Days)</h3>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h3 class="h5 fw-bold text-white mb-4"><i class="fas fa-chart-pie text-success me-2"></i> Rate Compliance</h3>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="complianceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Registered Students List -->
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <h3 class="h5 fw-bold text-white mb-0"><i class="fas fa-id-card text-primary me-2"></i> Enrolled Student Profiles</h3>
+                
+                <!-- Search Student Input -->
+                <div class="d-flex align-items-center flex-grow-1 max-width-md ms-md-4" style="max-width: 380px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: var(--border-color);"><i class="fas fa-search"></i></span>
+                        <input type="text" id="student-search-input" class="form-control bg-transparent text-white border-start-0" placeholder="Search by name or username..." style="border-color: var(--border-color); border-radius: 0 10px 10px 0; color: var(--text-primary) !important;">
+                    </div>
+                </div>
+                
+                <a href="/admin/register" class="btn btn-primary-custom btn-sm text-nowrap"><i class="fas fa-user-plus me-1"></i> Register Student</a>
+            </div>
+            
+            {% if students %}
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Label ID</th>
+                                <th>Roll Number</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Created On</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-table-body">
+                            {% for student in students %}
+                                <tr>
+                                    <td class="font-monospace text-primary fw-semibold">#{{ student.id }}</td>
+                                    <td class="fw-semibold text-white student-roll-cell">{{ student.roll_number or 'N/A' }}</td>
+                                    <td class="text-white student-name-cell">{{ student.name }}</td>
+                                    <td><code class="student-username-cell">{{ student.username }}</code></td>
+                                    <td class="student-dept-cell">{{ student.department or 'N/A' }}</td>
+                                    <td class="student-year-cell text-info">{{ student.year or 'N/A' }}</td>
+                                    <td class="text-secondary small">{{ student.created_at }}</td>
+                                    <td class="text-end">
+                                        <form method="POST" action="/admin/delete_student/{{ student.id }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ student.name }}? This will permanently delete their account, face samples, and attendance records.');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm px-3"><i class="far fa-trash-alt me-1"></i> Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="fas fa-users-slash fs-1 mb-3 text-muted"></i>
+                    <p class="mb-1">No students registered yet.</p>
+                    <p class="small text-muted mb-4">Add a new student profile to start face training.</p>
+                    <a href="/admin/register" class="btn btn-primary-custom btn-sm"><i class="fas fa-plus me-1"></i> Register Now</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Daily Trend Line Chart
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_dates|tojson }},
+            datasets: [{
+                label: 'Checked-in Students',
+                data: {{ chart_counts|tojson }},
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: '#3b82f6',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#9ca3af', font: { family: 'Outfit' }, stepSize: 1, beginAtZero: true }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af', font: { family: 'Outfit' } }
+                }
+            }
+        }
+    });
+
+    // 2. Compliance Doughnut Chart
+    const complianceCtx = document.getElementById('complianceChart').getContext('2d');
+    const complianceChart = new Chart(complianceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Compliant (>=75%)', 'Irregular (<75%)'],
+            datasets: [{
+                data: [{{ compliant_count }}, {{ non_compliant_count }}],
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderColor: 'rgba(22, 28, 42, 0.8)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#9ca3af', font: { family: 'Outfit', size: 12 } }
+                }
+            },
+            cutout: '72%'
+        }
+    });
+
+    // 3. Search Student Filtering
+    const searchInput = document.getElementById("student-search-input");
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            const rows = document.querySelectorAll("#student-table-body tr");
+            
+            rows.forEach(row => {
+                const name = row.querySelector(".student-name-cell").textContent.toLowerCase();
+                const username = row.querySelector(".student-username-cell").textContent.toLowerCase();
+                const roll = row.querySelector(".student-roll-cell").textContent.toLowerCase();
+                const dept = row.querySelector(".student-dept-cell").textContent.toLowerCase();
+                const year = row.querySelector(".student-year-cell").textContent.toLowerCase();
+                
+                if (name.includes(query) || username.includes(query) || roll.includes(query) || dept.includes(query) || year.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    }
+
+    // 4. Async Retrain Model Handler
+    const trainBtn = document.getElementById("train-model-btn");
+    const trainLabel = document.getElementById("train-btn-label");
+    const modelStatusText = document.getElementById("model-status-text");
+
+    if (trainBtn) {
+        trainBtn.addEventListener("click", async () => {
+            trainBtn.disabled = true;
+            trainLabel.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Training...';
+            
+            try {
+                const response = await fetch("/api/train_model", { method: "POST" });
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    modelStatusText.innerText = "Ready";
+                    modelStatusText.className = "fs-3 fw-bold text-white";
+                    alert("[+] Model training completed successfully!\n" + data.message);
+                } else {
+                    alert("[-] Training failed: " + data.message);
+                }
+            } catch (err) {
+                console.error("Training execution error: ", err);
+                alert("[-] Request failed. Check flask logs.");
+            } finally {
+                trainBtn.disabled = false;
+                trainLabel.innerText = "Train Model";
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Student - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="glass-card p-5" id="form-container">
+            <!-- Form to fill in student info first -->
+            <form id="register-form">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-dark bg-opacity-25 d-inline-flex align-items-center justify-content-center mb-3" style="width: 65px; height: 65px; border: 1px solid var(--border-color);">
+                        <i class="fas fa-user-plus text-primary fs-3"></i>
+                    </div>
+                    <h2 class="h4 fw-bold text-white mb-1">New Student Profile</h2>
+                    <p class="text-secondary small">Set up profile credentials before capturing face samples</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="student-name" class="form-label text-secondary small fw-medium">Student Name</label>
+                    <input type="text" class="form-control form-control-custom" id="student-name" placeholder="Enter Full Name (e.g. Alice Smith)" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="student-username" class="form-label text-secondary small fw-medium">Student Username</label>
+                    <input type="text" class="form-control form-control-custom" id="student-username" placeholder="Enter Username (e.g. alicesmith)" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="student-roll" class="form-label text-secondary small fw-medium">Student ID / Roll Number</label>
+                    <input type="text" class="form-control form-control-custom" id="student-roll" placeholder="Enter ID/Roll Number (e.g. CS-2026-001)" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="student-dept" class="form-label text-secondary small fw-medium">Department</label>
+                    <input type="text" class="form-control form-control-custom" id="student-dept" placeholder="Enter Department (e.g. Computer Science)" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="student-year" class="form-label text-secondary small fw-medium">Year / Batch</label>
+                    <select class="form-select form-control-custom" id="student-year" required>
+                        <option value="" disabled selected>Select Year/Batch</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary-custom w-100 py-2.5"><i class="fas fa-arrow-right me-2"></i> Register Profile & Begin Capture</button>
+            </form>
+            
+            <!-- Webcam face snapshot capture section, hidden until student info registered in DB -->
+            <div id="webcam-section" class="d-none text-center">
+                <h2 class="h4 fw-bold text-white mb-2">Capture Facial Samples</h2>
+                <p class="text-secondary mb-4">Position your face in the box. 100 images will be saved.</p>
+                
+                <div id="webcam-wrapper" class="webcam-wrapper mb-4">
+                    <video id="webcam" class="webcam-stream" autoplay playsinline muted></video>
+                    <div class="scan-overlay">
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+                
+                <div id="progress-container" class="mb-4">
+                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                        <span id="progress-text">Captured 0 / 100 samples</span>
+                        <span>Target: 100</span>
+                    </div>
+                    <div class="progress bg-dark" style="height: 10px; border-radius: 5px;">
+                        <div id="progress-bar" class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; border-radius: 5px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                
+                <div id="status-card" class="p-3 mb-4 rounded-3 text-secondary font-monospace border" style="background: rgba(0,0,0,0.2); border-color: var(--border-color) !important;">
+                    <span id="status-text">Webcam stream status...</span>
+                </div>
+                
+                <div id="action-container">
+                    <button id="start-capture-btn" class="btn btn-success-custom px-5 py-2.5" disabled><i class="fas fa-camera me-2"></i> Start Capturing</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}

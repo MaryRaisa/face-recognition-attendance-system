@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Management - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1 class="h3 fw-bold text-white mb-1"><i class="fas fa-calendar-check text-primary me-2"></i> Attendance Logbook</h1>
+            <p class="text-secondary mb-0">Review all registered attendance records in the database.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/admin/export/csv" class="btn btn-success-custom btn-sm"><i class="fas fa-file-csv me-1"></i> Export CSV</a>
+            <a href="/admin/export/pdf" class="btn btn-primary-custom btn-sm"><i class="fas fa-file-pdf me-1"></i> Export PDF</a>
+            <a href="/admin" class="btn btn-outline-light btn-sm"><i class="fas fa-arrow-left me-1"></i> Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <h3 class="h5 fw-bold text-white mb-0"><i class="fas fa-list-alt text-success me-2"></i> Attendance Logs</h3>
+                
+                <!-- Log Search Input -->
+                <div class="d-flex align-items-center flex-grow-1 max-width-md ms-md-4" style="max-width: 400px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: var(--border-color);"><i class="fas fa-search"></i></span>
+                        <input type="text" id="log-search-input" class="form-control bg-transparent text-white border-start-0" placeholder="Search by name, ID, username, date..." style="border-color: var(--border-color); border-radius: 0 10px 10px 0; color: var(--text-primary) !important;">
+                    </div>
+                </div>
+            </div>
+
+            {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Label ID</th>
+                                <th>Roll Number</th>
+                                <th>Student Name</th>
+                                <th>Username</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Match Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                            {% for log in logs %}
+                                <tr>
+                                    <td class="text-white log-date-cell"><i class="far fa-calendar me-2 text-muted"></i> {{ log.date }}</td>
+                                    <td><i class="far fa-clock me-2 text-muted"></i> {{ log.time }}</td>
+                                    <td class="font-monospace text-primary fw-semibold log-id-cell">#{{ log.student_id }}</td>
+                                    <td class="fw-semibold text-white log-roll-cell">{{ log.roll_number or 'N/A' }}</td>
+                                    <td class="text-white fw-semibold log-name-cell">{{ log.name }}</td>
+                                    <td><code class="log-username-cell">{{ log.username }}</code></td>
+                                    <td class="log-dept-cell">{{ log.department or 'N/A' }}</td>
+                                    <td class="log-year-cell text-info">{{ log.year or 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                            LBPH Dist: {{ log.confidence }}
+                                        </span>
+                                    </td>
+                                    <td><span class="text-success"><i class="fas fa-check-circle me-1"></i> Present</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="fas fa-calendar-times fs-1 mb-3 text-muted"></i>
+                    <p class="mb-0">No attendance logs found in the database yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("log-search-input");
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            const rows = document.querySelectorAll("#log-table-body tr");
+            
+            rows.forEach(row => {
+                const date = row.querySelector(".log-date-cell").textContent.toLowerCase();
+                const id = row.querySelector(".log-id-cell").textContent.toLowerCase();
+                const roll = row.querySelector(".log-roll-cell").textContent.toLowerCase();
+                const name = row.querySelector(".log-name-cell").textContent.toLowerCase();
+                const username = row.querySelector(".log-username-cell").textContent.toLowerCase();
+                const dept = row.querySelector(".log-dept-cell").textContent.toLowerCase();
+                const year = row.querySelector(".log-year-cell").textContent.toLowerCase();
+                
+                if (date.includes(query) || id.includes(query) || roll.includes(query) || name.includes(query) || username.includes(query) || dept.includes(query) || year.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

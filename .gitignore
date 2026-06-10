@@ -1,0 +1,7 @@
+faceenv/
+__pycache__/
+*.pyc
+dataset/
+trainer/
+attendance/
+*.db

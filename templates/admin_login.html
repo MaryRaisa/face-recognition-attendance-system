@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-card p-5">
+            <div class="text-center mb-4">
+                <div class="rounded-circle bg-dark bg-opacity-25 d-inline-flex align-items-center justify-content-center mb-3" style="width: 65px; height: 65px; border: 1px solid var(--border-color);">
+                    <i class="fas fa-lock text-primary fs-3"></i>
+                </div>
+                <h2 class="h4 fw-bold text-white mb-1">Admin Portal</h2>
+                <p class="text-secondary small">Access system configuration and management</p>
+            </div>
+            
+            <form method="POST" action="/admin/login">
+                <div class="mb-3">
+                    <label for="username" class="form-label text-secondary small fw-medium">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 border-color" style="border-color: var(--border-color); color: var(--text-secondary);"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control form-control-custom border-start-0" id="username" name="username" placeholder="Enter admin username" required>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="password" class="form-label text-secondary small fw-medium">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 border-color" style="border-color: var(--border-color); color: var(--text-secondary);"><i class="fas fa-key"></i></span>
+                        <input type="password" class="form-control form-control-custom border-start-0" id="password" name="password" placeholder="Enter security password" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary-custom w-100 py-2.5"><i class="fas fa-sign-in-alt me-2"></i> Log In</button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <a href="/" class="text-secondary small text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

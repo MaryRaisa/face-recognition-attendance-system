@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Portal - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-success mb-2"><i class="fas fa-check-circle me-1"></i> Active Student Session</span>
+                <h1 class="h3 fw-bold text-white mb-1">Welcome, {{ student.name }}</h1>
+                <p class="text-secondary mb-2">Student Username: <code class="text-primary fw-medium">{{ student.username }}</code> | Registered on: {{ student.created_at }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-dark bg-opacity-50 text-white border border-secondary border-opacity-25 py-2 px-3 fs-7" style="border-radius: 6px;"><i class="fas fa-id-card me-1 text-primary"></i> Roll No: {{ student.roll_number or 'N/A' }}</span>
+                    <span class="badge bg-dark bg-opacity-50 text-white border border-secondary border-opacity-25 py-2 px-3 fs-7" style="border-radius: 6px;"><i class="fas fa-graduation-cap me-1 text-primary"></i> Dept: {{ student.department or 'N/A' }}</span>
+                    <span class="badge bg-dark bg-opacity-50 text-white border border-secondary border-opacity-25 py-2 px-3 fs-7" style="border-radius: 6px;"><i class="fas fa-calendar-alt me-1 text-primary"></i> Year: {{ student.year or 'N/A' }}</span>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex align-items-center bg-dark bg-opacity-25 rounded-3 p-3 border border-secondary border-opacity-10">
+                    <div class="pe-3 border-end border-secondary border-opacity-25">
+                        <small class="text-secondary d-block text-uppercase tracking-wider fs-8 mb-1">Total Attendances</small>
+                        <span class="fs-4 fw-bold text-white">{{ attendance_list|length }}</span>
+                    </div>
+                    <div class="ps-3">
+                        <small class="text-secondary d-block text-uppercase tracking-wider fs-8 mb-1">Current Label ID</small>
+                        <span class="fs-4 fw-bold text-primary">{{ student.id }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Metrics Cards -->
+<div class="row mb-4">
+    <!-- Today's Attendance Card -->
+    <div class="col-md-6 mb-4 mb-md-0">
+        <div class="glass-card p-4 stat-card {% if is_marked_today %}success{% else %}warning{% endif %} h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-secondary text-uppercase tracking-wider fs-8 mb-2">Today's Attendance</h6>
+                    <span class="fs-4 fw-bold text-white">
+                        {% if is_marked_today %}
+                            <span class="text-success"><i class="fas fa-check-circle me-1"></i> Present</span>
+                        {% else %}
+                            <span class="text-warning"><i class="fas fa-exclamation-circle me-1"></i> Absent / Pending</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="rounded-3 bg-opacity-10 p-3 {% if is_marked_today %}bg-success text-success border-success{% else %}bg-warning text-warning border-warning{% endif %} border border-opacity-10" style="width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas {% if is_marked_today %}fa-calendar-check{% else %}fa-calendar-times{% endif %} fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <small class="text-secondary">
+                    {% if is_marked_today %}
+                        Log complete. Your attendance for today is successfully recorded.
+                    {% else %}
+                        Please log in using the face scanner today to mark present.
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Percentage Card -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 stat-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-secondary text-uppercase tracking-wider fs-8 mb-2">Attendance Rate</h6>
+                    <span class="fs-3 fw-bold text-white">{{ attendance_percentage }}%</span>
+                </div>
+                <div class="rounded-3 bg-primary bg-opacity-10 p-3 border border-primary border-opacity-10 text-primary" style="width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-line fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <!-- Progress bar -->
+                <div class="progress bg-dark mb-1" style="height: 6px; border-radius: 3px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ attendance_percentage }}%;" aria-valuenow="{{ attendance_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-secondary d-flex justify-content-between">
+                    <span>Enrolled Days: {{ total_days }}</span>
+                    <span>Rate target: 75%</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Attendance Table -->
+    <div class="col-lg-8 mb-4">
+        <div class="glass-card p-4 h-100">
+            <h3 class="h5 fw-bold text-white mb-4"><i class="fas fa-calendar-check text-success me-2"></i> Attendance History</h3>
+            
+            {% if attendance_list %}
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Match Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for att in attendance_list %}
+                                <tr>
+                                    <td><i class="far fa-calendar me-2 text-muted"></i> {{ att.date }}</td>
+                                    <td><i class="far fa-clock me-2 text-muted"></i> {{ att.time }}</td>
+                                    <td>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                            LBPH Dist: {{ att.confidence }}
+                                        </span>
+                                    </td>
+                                    <td><span class="text-success"><i class="fas fa-check me-1"></i> Present</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="fas fa-clipboard-list fs-1 mb-3 text-muted"></i>
+                    <p class="mb-0">No attendance records found yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Login History Logs -->
+    <div class="col-lg-4 mb-4">
+        <div class="glass-card p-4 h-100">
+            <h3 class="h5 fw-bold text-white mb-4"><i class="fas fa-shield-alt text-primary me-2"></i> Session Audits</h3>
+            
+            {% if login_logs %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for log in login_logs %}
+                            <li class="list-group-item bg-transparent px-0 py-3 border-secondary border-opacity-25" style="border-bottom: 1px solid var(--border-color);">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="text-white small d-block">Face Login Attempt</strong>
+                                        <span class="text-secondary fs-8">{{ log.timestamp }}</span>
+                                    </div>
+                                    <span class="badge {% if log.status == 'Success' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} border border-{% if log.status == 'Success' %}success{% else %}danger{% endif %} border-opacity-25 font-monospace">
+                                        {{ log.status }}
+                                    </span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="fas fa-history fs-1 mb-3 text-muted"></i>
+                    <p class="mb-0">No login records found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
