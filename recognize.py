@@ -168,7 +168,7 @@ def main():
     
     # LBPH Confidence settings (LBPH returns distance - lower values represent closer match)
     # Threshold for recognizing the person
-    CONFIDENCE_THRESHOLD = 80.0 
+    CONFIDENCE_THRESHOLD = 55.0 
     
     # Load already marked attendance for today to prevent duplicates
     marked_today = load_marked_today(attendance_csv, db_path)

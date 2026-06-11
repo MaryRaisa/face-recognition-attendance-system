@@ -29,6 +29,12 @@ DATASET_DIR = os.path.join(BASE_DIR, "dataset")
 TRAINER_FILE = os.path.join(BASE_DIR, "trainer", "trainer.yml")
 CASCADE_PATH = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
+# LBPH Face Recognizer settings
+# Confidence threshold determines the distance cutoff for face matching.
+# Lower value = stricter matching (e.g. 50.0), higher value = more lenient (e.g. 70.0).
+# Standard recommended range is 50.0 to 65.0.
+CONFIDENCE_THRESHOLD = 55.0
+
 # Ensure base folders exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 os.makedirs(DATASET_DIR, exist_ok=True)
@@ -483,7 +489,6 @@ def api_login_face():
         # Predict
         student_id, confidence_dist = recognizer.predict(face_resized)
         
-        CONFIDENCE_THRESHOLD = 80.0
         if confidence_dist < CONFIDENCE_THRESHOLD:
             student = database.get_student_by_id(DB_PATH, student_id)
             if student:
