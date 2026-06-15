@@ -95,9 +95,3 @@ python app.py
 ## Author
 
 **Mary Raisa P**
-
-BE Computer Science and Engineering
-
-Ramco Institute of Technology
-
-GATE CSE 2027 Aspirant
